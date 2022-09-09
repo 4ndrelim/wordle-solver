@@ -111,14 +111,12 @@ def filter_available_words(guess_word, colours, possible_words):
 
 def make_evaluate_guess(word, word_list):
     '''
-    takes in a guess as input and returns a colour sequence as a string
-    
     Parameters
     ----------
     word_list:
         list of all possible words
     word:
-        the word
+        the actual word
     Returns
     -------
         A list of possible words after making this guess.
@@ -163,8 +161,9 @@ def solver(word_list, evaluate_guess_func):
     ----------
     word_list:
         A list of strings of all words in the word list.
+        
     evaluate_guess_func:
-        A function that represents the wordle game with a hidden word.
+        takes in a guess as input and returns a colour sequence as a string
 
         Parameters
         ----------
@@ -188,6 +187,18 @@ def solver(word_list, evaluate_guess_func):
     return curr[0] if len(curr) == 1 else "NOT POSSIBLE"
 
 
+
 ## BASIC TESTING (or observation..)
 test_filter = filter_available_words("tests", "BGYBB", word_dictionary)
 # print(test_filter)
+
+''' Test cases for `solver` '''
+game_one = make_evaluate_guess("anime", word_dictionary)
+print(solver(word_dictionary, game_one)) # Should print 'anime'
+
+game_two = make_evaluate_guess("abyss", word_dictionary)
+print(solver(word_dictionary, game_two)) # Should print 'abyss'
+
+
+game_not_pos = make_evaluate_guess("vosts", word_dictionary)
+print(solver(word_dictionary, game_not_pos)) # Should print 'NOT POSSIBLE'
