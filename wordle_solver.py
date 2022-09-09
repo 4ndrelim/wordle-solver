@@ -111,6 +111,8 @@ def filter_available_words(guess_word, colours, possible_words):
 
 def make_evaluate_guess(word, word_list):
     '''
+    evaluates the guess word against the actual word
+    
     Parameters
     ----------
     word_list:
@@ -124,7 +126,7 @@ def make_evaluate_guess(word, word_list):
     def evaluate_guess(guess_word):
         '''
         evaluate_guess is a function that runs the Wordle-game logic
-        i.e takes in a guess as input and returns the colour sequence as a string
+        i.e takes in a guess word as input and returns the colour sequence as a string
         '''
         if guess_word not in word_list:
             raise Exception("Guess word not in word list")
@@ -184,7 +186,12 @@ def solver(word_list, evaluate_guess_func):
         guess = generate_random_guess_word(curr)
         score = evaluate_guess_func(guess)
         curr = filter_available_words(guess, score, curr)
-    return curr[0] if len(curr) == 1 else "NOT POSSIBLE"
+        
+    if (len(curr) == 1):
+        score = evaluate_guess_func(curr[0])
+        if score == "G"*len(curr[0]):
+            return curr[0]
+    return "NOT POSSIBLE"
 
 
 
