@@ -108,6 +108,86 @@ def filter_available_words(guess_word, colours, possible_words):
     return ret
 
 
+
+def make_evaluate_guess(word, word_list):
+    '''
+    takes in a guess as input and returns a colour sequence as a string
+    
+    Parameters
+    ----------
+    word_list:
+        list of all possible words
+    word:
+        the word
+    Returns
+    -------
+        A list of possible words after making this guess.
+    '''
+    def evaluate_guess(guess_word):
+        '''
+        evaluate_guess is a function that runs the Wordle-game logic
+        i.e takes in a guess as input and returns the colour sequence as a string
+        '''
+        if guess_word not in word_list:
+            raise Exception("Guess word not in word list")
+        word_length = len(word)
+        if len(guess_word) != word_length:
+            raise Exception("Guess word not of correct length")
+
+        result = ['B']*word_length
+        word_l = list(word)
+        ignore_index = []
+        for i in range(word_length):
+            if i in ignore_index:
+                continue
+            if guess_word[i] == word_l[i]:
+                result[i] = 'G'
+                word_l[i] = '-'
+                ignore_index.append(i)
+        for i in range(word_length):
+            if i in ignore_index:
+                continue
+            for j in range(word_length):
+                if guess_word[i] == word_l[j]:
+                    result[i] = 'Y'
+                    word_l[j] = '-'
+                    break
+        return ''.join(result)
+    return evaluate_guess
+
+def solver(word_list, evaluate_guess_func):
+    '''
+    Solves the wordle game, getting the hidden word.
+
+    Parameters
+    ----------
+    word_list:
+        A list of strings of all words in the word list.
+    evaluate_guess_func:
+        A function that represents the wordle game with a hidden word.
+
+        Parameters
+        ----------
+        guess_word:
+            A string of the word to guess.
+
+        Returns
+        -------
+            A string representation of the colours of the result of the guess word.
+    
+    Returns
+    -------
+        A string of the hidden word of evaluate_guess_func.
+    '''
+  
+    curr = word_list 
+    while (len(curr) > 1):
+        guess = generate_random_guess_word(curr)
+        score = evaluate_guess_func(guess)
+        curr = filter_available_words(guess, score, curr)
+    return curr[0] if len(curr) == 1 else "NOT POSSIBLE"
+
+
 ## BASIC TESTING (or observation..)
 test_filter = filter_available_words("tests", "BGYBB", word_dictionary)
 # print(test_filter)
