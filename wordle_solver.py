@@ -5,6 +5,13 @@
 import random
 from collections import defaultdict
 
+# get all dictionary of words
+word_dictionary = None
+with open('dictionary.txt', 'r') as f:
+    word_dictionary = f.read().split()
+
+
+
 def generate_random_guess_word(possible_words):
     '''
     Generates a random word from the list of possible words.
@@ -40,7 +47,7 @@ def filter_available_words(guess_word, colours, possible_words):
     -------
         A list of possible words after making this guess.
     '''
-    guess_word = guess_word.lower()
+##    guess_word = guess_word.lower() # uncomment this if guess_word not of consistent case
     # return list of plausible words after filtering; 
     ret = []
     
@@ -72,7 +79,7 @@ def filter_available_words(guess_word, colours, possible_words):
             avoid_yellow_black_spots[i] = char
   
     for word in possible_words:
-        word = word.lower() 
+##        word = word.lower() # uncomment this if words in possible_words not of consistent case
         if len(word) != len(guess_word):
             continue
         count_char = defaultdict(lambda: 0)
@@ -99,3 +106,8 @@ def filter_available_words(guess_word, colours, possible_words):
         if possible:
             ret.append(word)
     return ret
+
+
+## BASIC TESTING (or observation..)
+test_filter = filter_available_words("tests", "BGYBB", word_dictionary)
+# print(test_filter)
