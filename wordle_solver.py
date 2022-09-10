@@ -33,6 +33,7 @@ def filter_available_words(guess_word, colours, possible_words):
     Filters the list of possible words after making a guess.
     algorithm below accounts for repeats 
     (accordance with conventional wordle rules & how colouring is handled for repeats)
+    rules: https://wordfinder.yourdictionary.com/blog/can-letters-repeat-in-wordle-a-closer-look-at-the-rules/
 
     Parameters
     ----------
@@ -193,6 +194,58 @@ def solver(word_list, evaluate_guess_func):
             return curr[0]
     return "NOT POSSIBLE"
 
+
+def generate_smart_guess(word_list, possible_words, nth_guess):
+    '''
+    Generates a good guess word from the list of possible words.
+
+    Parameters
+    ----------
+    word_list:
+        A list of strings of all words in the word list.
+    possible_words:
+        A list of strings of all possible remaining words in the word list.
+    nth_guess:
+        A number indicating how many guesses have been made so far inclusive of this one.
+    
+    Returns
+    -------
+        A string of a good guess.
+    '''
+    
+    # Inspiration: https://youtu.be/fVMlnSfGq0c 
+    # Off of 3b1b except no log cost was computed, instead cost for a word is 
+    # overall product, for each letter, 
+    # squared difference of the frequency of the letter in that pos wrt to highest freq of any letter at that pos
+    # intuitively, calculating 'similarity'
+    
+    size = len(word_list[0])
+    
+    freq_dict = defaultdict(lambda : [0 for i in range(size)]) # numbers represents no. letter appears in a 5-letter word
+    
+    for word in possible_words: # consider remaining words; similarity of a word with all rem. words
+        word = word.lower()
+        for i, letter in enumerate(word):
+            freq_dict[letter][i] += 1
+            
+    max_freq = [0,0,0,0,0] # max freq for each position for every letter
+    # get max freq
+    for letter, counts in freq_dict.items():
+        for i in range(size):
+            if counts[i] > max_freq[i]:
+                max_freq[i] = counts[i]
+    
+    # compute score for each word
+    word_scores = {}
+    for word in possible_words:
+        score = 1
+        for i in range(0,size):
+            if (word[i] == 't'):
+            score *= (1 + (freq_dict[word[i]][i] - max_freq[i])**2)
+        word_scores[word] = score
+    
+    # return word with lowest score
+    return min(word_scores, key = word_scores.get)
 
 
 ## BASIC TESTING (or observation..)
