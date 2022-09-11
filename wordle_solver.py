@@ -195,6 +195,46 @@ def solver(word_list, evaluate_guess_func):
     return "NOT POSSIBLE"
 
 
+
+## BASIC TESTING (or observation..)
+test_filter = filter_available_words("tests", "BGYBB", word_dictionary)
+# print(test_filter)
+
+''' Test cases for `solver` '''
+game_one = make_evaluate_guess("anime", word_dictionary)
+print(solver(word_dictionary, game_one)) # Should print 'anime'
+
+game_two = make_evaluate_guess("abyss", word_dictionary)
+print(solver(word_dictionary, game_two)) # Should print 'abyss'
+
+
+game_not_pos = make_evaluate_guess("vosts", word_dictionary)
+print(solver(word_dictionary, game_not_pos)) # Should print 'NOT POSSIBLE'
+
+
+
+
+
+
+'''
+Rattionale for smarter guess:
+Want the AI to exploit what it knows but also explore the
+impossible words that could possibly provide more information.
+
+For e.g. suppose we have narrowed the letters down to
+CHA_E
+and within the possibility space, there still exists:
+CHASE
+CHAVE
+CHAFE
+CHAPE
+
+Exploitation would require you to iterate and check each letter whereas
+guessing an alternative word like ANTSY would have given the remaining info
+that the hidden word is CHASE
+
+'''
+
 def generate_smart_guess(word_list, possible_words, nth_guess):
     '''
     Generates a good guess word from the list of possible words.
@@ -248,17 +288,62 @@ def generate_smart_guess(word_list, possible_words, nth_guess):
     return min(word_scores, key = word_scores.get)
 
 
-## BASIC TESTING (or observation..)
-test_filter = filter_available_words("tests", "BGYBB", word_dictionary)
-# print(test_filter)
+# Refer smarter guess function
+def generate_smart_guess(word_list, possible_words, nth_guess):
+    '''
+    Generates a good guess word from the list of possible words.
 
-''' Test cases for `solver` '''
-game_one = make_evaluate_guess("anime", word_dictionary)
-print(solver(word_dictionary, game_one)) # Should print 'anime'
+    Parameters
+    ----------
+    word_list:
+        A list of strings of all words in the word list.
+    possible_words:
+        A list of strings of all possible remaining words in the word list.
+    nth_guess:
+        A number indicating how many guesses have been made so far inclusive of this one.
+    
+    Returns
+    -------
+        A string of a good guess.
+    '''
+    
+    # Inspiration: https://youtu.be/fVMlnSfGq0c 
+    # Off of 3b1b except no log cost was computed, instead cost for a word is 
+    # overall product, for each letter, 
+    # squared difference of the frequency of the letter in that pos wrt to highest freq of any letter at that pos
+    # intuitively, calculating 'similarity'
 
-game_two = make_evaluate_guess("abyss", word_dictionary)
-print(solver(word_dictionary, game_two)) # Should print 'abyss'
+    if len(possible_words) == 1:
+        return possible_words[0] # might as well return the last possible word
+    
+    size = len(word_list[0])
+    
+    freq_dict = defaultdict(lambda : [0 for i in range(size)]) # numbers represents no. letter appears in a 5-letter word
+    
+    for word in possible_words: # consider remaining words; similarity of a word with all rem. words
+        word = word.lower()
+        for i, letter in enumerate(word):
+            freq_dict[letter][i] += 1
+            
+    max_freq = [0,0,0,0,0] # max freq for each position for every letter
+    # get max freq
+    for letter, counts in freq_dict.items():
+        for i in range(size):
+            if counts[i] > max_freq[i]:
+                max_freq[i] = counts[i]
+    
+    # compute score for each word
+    word_scores = {}
+    for word in possible_words:
+        score = 1
+        for i in range(0,size):
+            if (word[i] == 't'):
+            score *= (1 + (freq_dict[word[i]][i] - max_freq[i])**2)
+        word_scores[word] = score
 
-
-game_not_pos = make_evaluate_guess("vosts", word_dictionary)
-print(solver(word_dictionary, game_not_pos)) # Should print 'NOT POSSIBLE'
+    if random.random() < 0.3: # intuitively, after approx 3 tries of exploiting knowledge to make the best choice, make random choice
+        impossible_words = set(word_list) - set(possible_words)
+        return random.choice(list(impossible_words))
+    
+    # return word with lowest score
+    return min(word_scores, key = word_scores.get)
